@@ -1,0 +1,453 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CI/CD pipeline for GitHub projects
+Parameters:
+  ENV:
+    Type: String
+    Default: develop
+    AllowedValues:
+      - develop
+      - preprd
+      - prod
+  GitHubOwner:
+    Type: String
+    AllowedPattern: '[A-Za-z0-9-]+'
+    Default: Faithtosin
+  GitToken:
+    NoEcho: 'true'
+    Description: Password database access
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9]*'
+    ConstraintDescription: must contain only alphanumeric characters.
+  GitHubRepository:
+    Type: String
+    AllowedPattern: '[A-Za-z0-9-]+'
+    Default: S3website
+  GitHubBranch:
+    Type: String
+    AllowedPattern: '[A-Za-z0-9-]+'
+    Default: master
+    AllowedValues:
+      - develop
+      - preprd
+      - master
+  CodeBuildEnvironmentImage:
+    Type: String
+    Default: 'aws/codebuild/standard:4.0'
+    
+Mappings:
+  UiBucket:
+    name:
+      develop: ui-bucket-develop
+      preprd: ui-bucket-preprd
+      prod: ui-bucket-prod
+
+Resources:
+  #Angular build artifact bucket
+  AngularAppBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !FindInMap [UiBucket, name, !Ref ENV]
+      VersioningConfiguration: 
+        Status: Enabled
+      LifecycleConfiguration: 
+        Rules: 
+          - Id: DeleteOldVersionRule
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: '30'
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+  
+  #Bucket Policy
+  BucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    DependsOn: [AngularAppBucket]
+    Properties:
+      Bucket: !Ref AngularAppBucket
+      PolicyDocument:
+        Statement:
+          - Action:
+              - 's3:GetObject'
+            Effect: Allow
+            Resource: !Sub 
+              - arn:aws:s3:::${AngularAppBucketName}/*
+              - { AngularAppBucketName: !Ref AngularAppBucket }
+            Principal: '*'
+
+  #Cloudfront  Resource 
+  myDistribution:
+    Type: AWS::CloudFront::Distribution
+    DependsOn: [AngularAppBucket]
+    Properties:
+      DistributionConfig:
+        Origins:
+        - DomainName: !Select [2, !Split ["/", !GetAtt AngularAppBucket.WebsiteURL]]
+          Id: uiS3Origin
+          CustomOriginConfig:
+            HTTPPort: '80'
+            HTTPSPort: '443'
+            OriginProtocolPolicy: http-only
+        Enabled: 'true'
+        Comment: cloudfront linked to uibucket angular website
+        DefaultRootObject: index.html
+        # Logging:
+        #   IncludeCookies: 'false'
+        #   Bucket: mylogs.s3.amazonaws.com
+        #   Prefix: myprefix
+        # Aliases:
+        # - mysite.example.com
+        # - yoursite.example.com
+        DefaultCacheBehavior:
+          AllowedMethods:
+          - DELETE
+          - GET
+          - HEAD
+          - OPTIONS
+          - PATCH
+          - POST
+          - PUT
+          TargetOriginId: uiS3Origin
+          ForwardedValues:
+            QueryString: 'false'
+            Cookies:
+              Forward: none
+          # TrustedSigners:
+          # - 1234567890EX
+          # - 1234567891EX
+          ViewerProtocolPolicy: allow-all
+        # PriceClass: PriceClass_200
+        # Restrictions:
+        #   GeoRestriction:
+        #     RestrictionType: whitelist
+        #     Locations:
+        #     - AQ
+        #     - CV
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: 'true'
+  
+
+  #Codebuild Role
+  CodeBuildServiceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: 1
+                Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                  - 'logs:FilterLogEvents'
+                  - 'logs:GetLogEvents'
+                Resource:
+                  - '*'
+              - Sid: 2
+                Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:GetObjectVersion'
+                  - 's3:PutObject'
+                  - 's3:GetBucketAcl'
+                  - 's3:GetBucketLocation'
+                  - 's3:CreateBucket'
+                  - 's3:List*'
+                  - 's3:PutObjectAcl'
+                  - 's3:DeleteObject'
+                Resource:
+                  - '*'
+              - Sid: 3
+                Effect: Allow
+                Action:
+                  - 'ecr:GetDownloadUrlForLayer'
+                  - 'ecr:BatchGetImage'
+                  - 'ecr:BatchCheckLayerAvailability'
+                  - 'ecr:PutImage'
+                  - 'ecr:InitiateLayerUpload'
+                  - 'ecr:UploadLayerPart'
+                  - 'ecr:CompleteLayerUpload'
+                  - 'ecr:GetAuthorizationToken'
+                  - 'ecr:InitiateLayerUpload'
+                  - 'ec2:DescribeNetworkInterfaces'
+                  - 'ec2:CreateNetworkInterface'
+                  - 'ec2:DescribeDhcpOptions'
+                  - 'ec2:DescribeNetworkInterfaces'
+                  - 'ec2:DeleteNetworkInterface'
+                  - 'ec2:DescribeSubnets'
+                  - 'ec2:DescribeSecurityGroups'
+                  - 'ec2:DescribeSecurityGroupReferences'
+                  - 'ec2:DescribeStaleSecurityGroups'
+                  - 'ec2:DescribeVpcs'
+                  - 'ec2:CreateNetworkInterfacePermission'
+                Resource:
+                  - '*'
+              - Sid: 4
+                Effect: Allow
+                Action:
+                  - 'iam:AddRoleToInstanceProfile'
+                  - 'iam:AttachRolePolicy'
+                  - 'iam:CreateInstanceProfile'
+                  - 'iam:CreatePolicy'
+                  - 'iam:CreateRole'
+                  - 'iam:GetRole'
+                  - 'iam:ListAttachedRolePolicies'
+                  - 'iam:ListPolicies'
+                  - 'iam:ListRoles'
+                  - 'iam:PassRole'
+                  - 'iam:PutRolePolicy'
+                  - 'iam:UpdateAssumeRolePolicy'
+                Resource:
+                  - '*'
+              - Sid: 5
+                Effect: Allow
+                Action:
+                  - 'kms:Encrypt'
+                  - 'kms:Decrypt'
+                  - 'kms:ReEncrypt*'
+                  - 'kms:GenerateDataKey*'
+                  - 'kms:DescribeKey'
+                Resource:
+                  - '*'
+
+  #CodeBuild Project
+  CodeBuildProjectDeployDev:  
+    Type: 'AWS::CodeBuild::Project'
+    DependsOn: [AngularAppBucket]
+    Properties:
+      Name: !Sub 'codebuild-${AWS::StackName}'
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspec.yaml
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        PrivilegedMode: true
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: !Ref CodeBuildEnvironmentImage
+        EnvironmentVariables:
+          - Name: UiBucket_name
+            Value: !FindInMap [UiBucket, name, !Ref ENV]
+
+  
+  #CodePipeline Role
+  CodePipelineServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal:
+              Service: [codepipeline.amazonaws.com]
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: MACodePipelineServicePolicy
+          PolicyDocument:
+            Statement:
+              - Action:
+                  - iam:PassRole
+                Resource: "*"
+                Effect: Allow
+                Condition:
+                  StringEqualsIfExists:
+                    iam:PassedToService:
+                      - cloudformation.amazonaws.com
+                      - elasticbeanstalk.amazonaws.com
+                      - ec2.amazonaws.com
+                      - ecs-tasks.amazonaws.com
+              - Action:
+                  - codepipeline:StartPipelineExecution
+                  - codecommit:CancelUploadArchive
+                  - codecommit:GetBranch
+                  - codecommit:GetCommit
+                  - codecommit:GetUploadArchiveStatus
+                  - codecommit:UploadArchive
+                Resource: "*"
+                Effect: Allow
+              - Action:
+                  - codedeploy:CreateDeployment
+                  - codedeploy:GetApplication
+                  - codedeploy:GetApplicationRevision
+                  - codedeploy:GetDeployment
+                  - codedeploy:GetDeploymentConfig
+                  - codedeploy:RegisterApplicationRevision
+                Resource: "*"
+                Effect: Allow
+              - Action:
+                  - codestar-connections:UseConnection
+                Resource: "*"
+                Effect: Allow
+              - Action:
+                  - elasticbeanstalk:*
+                  - ec2:*
+                  - elasticloadbalancing:*
+                  - autoscaling:*
+                  - cloudwatch:*
+                  - s3:*
+                  - sns:*
+                  - cloudformation:*
+                  - rds:*
+                  - sqs:*
+                  - ecs:*
+                Resource: "*"
+                Effect: Allow
+              - Action:
+                  - lambda:InvokeFunction
+                  - lambda:ListFunctions
+                Resource: "*"
+                Effect: Allow
+              - Action:
+                  - opsworks:CreateDeployment
+                  - opsworks:DescribeApps
+                  - opsworks:DescribeCommands
+                  - opsworks:DescribeDeployments
+                  - opsworks:DescribeInstances
+                  - opsworks:DescribeStacks
+                  - opsworks:UpdateApp
+                  - opsworks:UpdateStack
+                Resource: "*"
+                Effect: Allow
+              - Action:
+                  - cloudformation:CreateStack
+                  - cloudformation:DeleteStack
+                  - cloudformation:DescribeStacks
+                  - cloudformation:UpdateStack
+                  - cloudformation:CreateChangeSet
+                  - cloudformation:DeleteChangeSet
+                  - cloudformation:DescribeChangeSet
+                  - cloudformation:ExecuteChangeSet
+                  - cloudformation:SetStackPolicy
+                  - cloudformation:ValidateTemplate
+                Resource: "*"
+                Effect: Allow
+              - Action:
+                  - codebuild:BatchGetBuilds
+                  - codebuild:StartBuild
+                  - codebuild:BatchGetBuildBatches
+                  - codebuild:StartBuildBatch
+                Resource: "*"
+                Effect: Allow
+              - Effect: Allow
+                Action:
+                  - devicefarm:ListProjects
+                  - devicefarm:ListDevicePools
+                  - devicefarm:GetRun
+                  - devicefarm:GetUpload
+                  - devicefarm:CreateUpload
+                  - devicefarm:ScheduleRun
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - servicecatalog:ListProvisioningArtifacts
+                  - servicecatalog:CreateProvisioningArtifact
+                  - servicecatalog:DescribeProvisioningArtifact
+                  - servicecatalog:DeleteProvisioningArtifact
+                  - servicecatalog:UpdateProduct
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - cloudformation:ValidateTemplate
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - ecr:DescribeImages
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - states:DescribeExecution
+                  - states:DescribeStateMachine
+                  - states:StartExecution
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - appconfig:StartDeployment
+                  - appconfig:StopDeployment
+                  - appconfig:GetDeployment
+                Resource: "*"
+            Version: '2012-10-17'
+
+  #Code PipelineArtifact Store
+  CodePipelineArtifactStore:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      VersioningConfiguration:
+        Status: Enabled
+
+  
+  #Codepipeline Project
+
+  CodePipelineWebhook:
+    Type: 'AWS::CodePipeline::Webhook'
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: !Ref GitToken
+      RegisterWithThirdParty: 'true'
+      Filters:
+        - JsonPath: $.ref
+          MatchEquals: 'refs/heads/{Branch}'
+        - JsonPath: $.repository.name
+          MatchEquals: '{Repo}'
+      TargetPipeline: !Ref CodePipeline
+      TargetAction: Source
+      TargetPipelineVersion: !GetAtt CodePipeline.Version
+
+  CodePipeline:
+    Type: 'AWS::CodePipeline::Pipeline'
+    Properties:
+      Name: !Ref 'AWS::StackName'
+      RoleArn: !GetAtt CodePipelineServiceRole.Arn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref CodePipelineArtifactStore
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Version: 1
+                Provider: GitHub
+              Configuration:
+                Owner: !Ref GitHubOwner
+                Repo: !Ref GitHubRepository
+                Branch: !Ref GitHubBranch
+                PollForSourceChanges: false
+                OAuthToken: !Ref GitToken
+              OutputArtifacts:
+                - Name: SourceCode
+        - Name: Dev
+          Actions:
+            - Name: Deploy
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: '1'
+              Configuration:
+                ProjectName: !Ref CodeBuildProjectDeployDev
+              InputArtifacts:
+                - Name: SourceCode
+              OutputArtifacts:
+                - Name: BuildOutput
+Outputs:
+  BucketURL:
+    Value: !GetAtt [AngularAppBucket, WebsiteURL]
+    Description: URL of the Angular website to browse
+  CloudfrontURL:
+    Value: !GetAtt [myDistribution, DomainName]
+    Description: URL of the Angular website to browse
