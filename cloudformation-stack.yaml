@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: CI/CD pipeline for GitHub projects
+Description: S3 website with CI/CD pipeline
 Parameters:
   ENV:
     Type: String
@@ -14,7 +14,7 @@ Parameters:
     Default: Faithtosin
   GitToken:
     NoEcho: 'true'
-    Description: Password database access
+    Description: Github token with access to website repository
     Type: String
     AllowedPattern: '[a-zA-Z0-9]*'
     ConstraintDescription: must contain only alphanumeric characters.
