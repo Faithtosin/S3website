@@ -6,10 +6,10 @@ phases:
       # Update libs
       - apt-get update
       - cd app
-      # Headless Chrome
-      - apt-get install -y fonts-liberation libasound2 libnspr4 libnss3 libx11-xcb1 xdg-utils libxss1 libappindicator1 libindicator7
-      - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-      - dpkg -i google-chrome*.deb
+      # Headless Chrome for testing
+      #- apt-get install -y fonts-liberation libasound2 libnspr4 libnss3 libx11-xcb1 xdg-utils libxss1 libappindicator1 libindicator7
+      #- wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+      #- dpkg -i google-chrome*.deb
   pre_build:
     commands:
       - npm install
@@ -19,8 +19,7 @@ phases:
       - npm run test:ci
   post_build:
     commands:
+      # Copy build artifacts to S3 bucket
       - aws s3 sync ./dist/angular-devops s3://ui-bucket-develop --acl 'public-read' --delete
-      #- aws s3 cp ./dist/moxa-ui s3://$MoxaUiBucket_name --recursive --acl public-read-write
-artifacts:
    files:
      - '**/*'
