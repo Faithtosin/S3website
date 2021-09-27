@@ -20,8 +20,6 @@ phases:
   post_build:
     commands:
       - aws s3 sync ./dist/angular-devops s3://ui-bucket-develop --acl 'public-read' --delete
-      #- aws s3 cp ./dist/moxa-ui s3://$MoxaUiBucket_name --recursive --acl public-read-write
-      #- aws s3 sync ./dist/ui-moxa s3://$MoxaUiBucket_name  --acl 'public-read' --delete
 artifacts:
    files:
      - '**/*'

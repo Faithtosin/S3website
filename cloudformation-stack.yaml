@@ -206,10 +206,34 @@ Resources:
       Name: !Sub 'codebuild-${AWS::StackName}'
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Source:
-        Type: CODEPIPELINE
-        BuildSpec: buildspec.yaml
+        Type: NO_SOURCE
+        BuildSpec: |
+          version: 0.2
+          phases:
+            install:
+              commands:
+                # Update libs
+                - apt-get update
+                - cd app
+                # Headless Chrome
+                - apt-get install -y fonts-liberation libasound2 libnspr4 libnss3 libx11-xcb1 xdg-utils libxss1 libappindicator1 libindicator7
+                - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+                - dpkg -i google-chrome*.deb
+            pre_build:
+              commands:
+                - npm install
+            build:
+              commands:
+                - npm run build:ci
+                - npm run test:ci
+            post_build:
+              commands:
+                - pwd
+          artifacts:
+            files:
+              - '**/*'
       Artifacts:
-        Type: CODEPIPELINE
+        Type: NO_ARTIFACTS
       Environment:
         Type: LINUX_CONTAINER
         PrivilegedMode: true
