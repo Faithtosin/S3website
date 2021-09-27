@@ -1,5 +1,7 @@
 version: 0.2
-
+env:
+  variables:
+    UiBucket_name: $UiBucket_name
 phases:
   install:
     commands:
@@ -19,7 +21,7 @@ phases:
       - npm run test:ci
   post_build:
     commands:
-      - aws s3 sync ./dist/angular-devops s3://ui-bucket-develop --acl 'public-read' --delete
+      - aws s3 sync ./dist/angular-devops s3://$UiBucket_name --acl 'public-read' --delete
 artifacts:
    files:
      - '**/*'
