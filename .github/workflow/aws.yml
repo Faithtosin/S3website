@@ -1,0 +1,38 @@
+on:
+  push:
+    branches:
+    - master
+    - github-actions
+    - /*
+    
+name: Buid and Deploy s3 website
+
+jobs:
+  build:
+    name: Build-step
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    - name: Run CodeBuild
+      uses: aws-actions/aws-codebuild-run-build@v1
+      with:
+        project-name: codebuild-github-action
+        buildspec-override: buildspec.yaml
+        env-vars-for-codebuild: |
+          custom,
+          requester,
+          event-name
+      env:
+        custom: my environment variable
+        requester: ${{ github.actor }}
+        event-name: ${{ github.event_name }}
