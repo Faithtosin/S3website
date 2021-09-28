@@ -2,8 +2,8 @@ on:
   push:
     branches:
     - master
-    - github-actions
-    - /*
+    - github*
+    #- /*
     
 name: Buid and Deploy s3 website
 
