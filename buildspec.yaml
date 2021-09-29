@@ -20,6 +20,6 @@ phases:
   post_build:
     commands:
       # Copy build artifacts to S3 bucket
-      - aws s3 sync ./dist/angular-devops s3://ui-bucket-develop --acl 'public-read' --delete
+      - aws s3 sync ./dist/angular-devops s3://$UiBucket_name --acl 'public-read' --delete
    files:
      - '**/*'
