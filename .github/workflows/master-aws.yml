@@ -8,7 +8,7 @@ on:
       tags:
         description: 'Test scenario tags' 
     
-name: Buid and Deploy s3 website
+name: Prod- deploy
 
 jobs:
   build:
