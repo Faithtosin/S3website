@@ -7,6 +7,8 @@ on:
         default: 'warning'
       tags:
         description: 'Test scenario tags' 
+env:
+  custom: 'check for env'
     
 name: Prod- deploy
 
@@ -37,6 +39,6 @@ jobs:
           requester,
           event-name
       env:
-        custom: my environment variable
+        custom: ${{ env.custom }}
         requester: ${{ github.actor }}
         event-name: ${{ github.event_name }}
