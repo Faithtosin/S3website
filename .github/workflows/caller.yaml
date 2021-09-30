@@ -35,6 +35,6 @@ jobs:
   call-workflow-passing-data:
     uses: Faithtosin/KinesisTool/.github/workflows/called-workflow.yml@master
     with:
-      username: ${{ inputs.username }}
-      env: ${{ inputs.env }}
+      username: ${{ github.event.inputs.username }}
+      env: ${{ github.event.inputs.env }}
    
