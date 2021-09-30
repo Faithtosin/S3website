@@ -2,11 +2,11 @@ on:
   workflow_dispatch:
     inputs:
       username:
-        description: 'Log level'     
+        description: 'Username'     
         required: true
         default: 'warning'
       env:
-        description: 'Test scenario tags' 
+        description: 'env' 
         required: true
         default: 'development'
 env:
