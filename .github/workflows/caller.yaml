@@ -10,7 +10,7 @@ on:
 env:
   custom: 'check for env'
     
-name: Prod- deploy
+name: Caller Workflow
 
 jobs:
   build:
