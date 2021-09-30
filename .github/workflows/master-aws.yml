@@ -25,6 +25,7 @@ jobs:
       with:
         repository: Faithtosin/honig
         ref: master
+        token: ${{ secrets.TOKEN }}
     - name: check files
       run: ls -la
 
