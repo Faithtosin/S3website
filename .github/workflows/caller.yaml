@@ -30,7 +30,7 @@ jobs:
       run: ls -la
 
   call-workflow-passing-data:
-    uses: Faithtosin/honig/.github/workflows/template.yml@master
+    uses: Faithtosin/KinesisTool/.github/workflows/called-workflow.yml@master
     with:
       username: Faith
       env: development
