@@ -24,6 +24,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: Faithtosin/honig
+        ref: master
     - name: check files
       run: ls -la
 
