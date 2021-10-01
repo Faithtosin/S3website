@@ -51,3 +51,5 @@ jobs:
         custom: ${{ env.custom }}
         requester: ${{ github.actor }}
         event-name: ${{ github.event_name }}
+        event-number: ${{ github.event.number  }}
+        Pull_Request_Number: ${{ github.event.pull_request.number }}
