@@ -46,7 +46,9 @@ jobs:
         env-vars-for-codebuild: |
           custom,
           requester,
-          event-name
+          event-name,
+          event-number,
+          Pull_Request_Number
       env:
         custom: ${{ env.custom }}
         requester: ${{ github.actor }}
