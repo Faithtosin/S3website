@@ -12,7 +12,7 @@ on:
 env:
   custom: 'check for env'
     
-name: Caller Priv Workflow
+name: Caller Priv Workflow refresh
 
 jobs:
   build:
