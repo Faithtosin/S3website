@@ -4,7 +4,9 @@ on:
     - master
     - github*
     #- /*
-    
+  pull_request:
+    branches:
+      - master
 name: Buid and Deploy s3 website
 
 jobs:
