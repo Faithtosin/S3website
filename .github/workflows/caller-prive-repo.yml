@@ -10,7 +10,7 @@ on:
         required: true
         default: 'development'
 env:
-  custom: 'development'
+  custom: ${{ inputs.username }}
     
 name: Caller Priv Workflow refresh
 
