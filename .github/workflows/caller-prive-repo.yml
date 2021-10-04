@@ -10,7 +10,7 @@ on:
         required: true
         default: 'development'
 env:
-  custom: 'check for env'
+  custom: 'development'
     
 name: Caller Priv Workflow refresh
 
@@ -35,4 +35,4 @@ jobs:
     uses: Faithtosin/honig/.github/workflows/template.yml@master
     with:
       username: ${{ github.event.inputs.username }}
-      env: ${{ github.event.inputs.env }}
+      env: ${{ env.custom }}
