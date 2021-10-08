@@ -7,6 +7,9 @@ phases:
   install:
     commands:
       # Update libs
+      - apt-get install tree
+      - ls -la
+      - tree
       - apt-get update
       - cd app
   pre_build:
