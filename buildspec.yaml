@@ -8,7 +8,6 @@ phases:
     commands:
       # Update libs
       - ls -la
-      - tree
       - apt-get update
       - cd app
   pre_build:
