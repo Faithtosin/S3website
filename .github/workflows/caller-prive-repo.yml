@@ -33,9 +33,10 @@ jobs:
 
   call-workflow-passing-data:
     uses: Faithtosin/honig/.github/workflows/codebuild.yml@master
-    with:
+    secrets:
       access_key_id: ${{ secrets.ACCESS_KEY_ID }}
       secret_access_key: ${{ secrets.SECRET_ACCESS_KEY }}
+    with:
       username: ${{ github.event.inputs.username }}
       env: dev
       #env: ${{ env.custom }}
