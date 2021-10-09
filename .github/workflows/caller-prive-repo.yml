@@ -10,7 +10,7 @@ on:
         required: true
         default: 'development'
 env:
-  custom: ${{ inputs.username }}
+  custom: "custon env"
     
 name: Caller Priv Workflow refresh
 
@@ -32,7 +32,7 @@ jobs:
       run: ls -la
 
   call-workflow-passing-data:
-    uses: Faithtosin/honig/.github/workflows/template.yml@master
+    uses: Faithtosin/honig/.github/workflows/codebuild.yml@master
     with:
       username: ${{ github.event.inputs.username }}
       env: ${{ env.custom }}
