@@ -35,4 +35,5 @@ jobs:
     uses: Faithtosin/honig/.github/workflows/codebuild.yml@master
     with:
       username: ${{ github.event.inputs.username }}
-      env: ${{ env.custom }}
+      env: dev
+      #env: ${{ env.custom }}
