@@ -4,7 +4,7 @@ on:
       username:
         description: 'Username'     
         required: true
-        default: 'warning'
+        default: 'buildspec.yaml'
       env:
         description: 'env' 
         required: true
@@ -38,5 +38,5 @@ jobs:
       secret_access_key: ${{ secrets.SECRET_ACCESS_KEY }}
     with:
       username: ${{ github.event.inputs.username }}
-      env: dev
+      env: ${{ fromJSON(env.continue) }}
       #env: ${{ env.custom }}
