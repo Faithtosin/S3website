@@ -38,5 +38,5 @@ jobs:
       secret_access_key: ${{ secrets.SECRET_ACCESS_KEY }}
     with:
       username: ${{ github.event.inputs.username }}
-      env: ${{ fromJSON(env.continue) }}
+      env: ${{ fromJSON(env.custom) }}
       #env: ${{ env.custom }}
