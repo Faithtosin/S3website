@@ -1,0 +1,28 @@
+on:
+  workflow_dispatch:
+    inputs:
+      username:
+        description: 'Username'     
+        required: true
+        default: 'buildspec.yaml'
+      env:
+        description: 'env' 
+        required: true
+        default: 'development'
+env:
+  custom: "custon env"
+    
+name: Caller Priv Workflow refresh
+
+jobs:
+  call-workflow-passing-data:
+    uses: Faithtosin/honig/.github/workflows/codebuild.yml@master
+    secrets:
+      access_key_id: ${{ secrets.ACCESS_KEY_ID }}
+      secret_access_key: ${{ secrets.SECRET_ACCESS_KEY }}
+      TOKEN: ${{ secrets.TOKEN }}
+    with:
+      username: ${{ github.event.inputs.username }}
+      env: ${{ github.event.inputs.env }}
+      #env: ${{ fromJSON(env.custom) }}
+      #env: ${{ env.custom }}
