@@ -20,6 +20,7 @@ jobs:
     secrets:
       access_key_id: ${{ secrets.ACCESS_KEY_ID }}
       secret_access_key: ${{ secrets.SECRET_ACCESS_KEY }}
+      TOKEN: ${{ secrets.TOKEN }}
     with:
       username: ${{ github.event.inputs.username }}
       env: ${{ github.event.inputs.env }}
