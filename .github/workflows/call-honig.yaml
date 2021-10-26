@@ -12,7 +12,7 @@ on:
 env:
   custom: "custon env"
     
-name: Caller Priv Workflow refresh
+name: Honig refresh
 
 jobs:
   call-workflow-passing-data:
