@@ -23,17 +23,12 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
-    - name: Run CodeBuild
-      uses: aws-actions/aws-codebuild-run-build@v1
-      with:
-        project-name: codebuild-github-action
-        buildspec-override: .github/workflows/buildspecs/codebuild-test.yaml
+    - name: Unit test started
+      run: echo "Started Unit testing"
+
+    - name: Unit test completed
+      run: echo "Unit testing Completed"
+    
 
   build:
     name: Build
@@ -44,18 +39,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
-      
-    - name: Run CodeBuild
-      uses: aws-actions/aws-codebuild-run-build@v1
-      with:
-        project-name: codebuild-github-action
-        buildspec-override: .github/workflows/buildspecs/codebuild-build.yaml
+    - name: Build started
+      run: echo "Started build stage"
+
+    - name: Build completed
+      run: echo "Build Completed"
 
   
   deploy-dev:
