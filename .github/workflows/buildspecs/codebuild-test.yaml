@@ -8,16 +8,13 @@ phases:
     commands:
       # Update libs
       - apt-get update
-      - cd app
   pre_build:
     commands:
-      - npm install
+      - echo "Running unit test"
+      
   build:
     commands:
-      - npm run build:ci
-  post_build:
-    commands:
-      - aws s3 sync ./dist/angular-devops s3://$UiBucket_name --acl 'public-read' --delete
+      - #npm test
 artifacts:
    files:
      - '**/*'

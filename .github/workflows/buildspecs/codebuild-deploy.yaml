@@ -1,0 +1,23 @@
+   
+version: 0.2
+env:
+  variables:
+    UiBucket_name: $UiBucket_name
+phases:
+  install:
+    commands:
+      # Update libs
+      - cd app
+  pre_build:
+    commands:
+      - npm install
+  build:
+    commands:
+      - npm run build:ci
+  post_build:
+    commands:
+      - aws s3 sync ./dist/angular-devops s3://$UiBucket_name --acl 'public-read' --delete
+      - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_ID --paths "/*"
+artifacts:
+   files:
+     - '**/*'
