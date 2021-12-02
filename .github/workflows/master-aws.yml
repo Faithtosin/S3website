@@ -11,13 +11,13 @@ on:
       tags:
         description: 'Test scenario tags' 
 env:
-  custom: 'check for env'
+  custom: 'Workflow_env'
     
-name: Prod- deploy
+name: PR-Pipeline
 
 jobs:
   build:
-    name: Build-step
+    name: Build
     runs-on: ubuntu-latest
     if: github.actor == 'Faithtosin'
     environment: development
@@ -25,10 +25,11 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-      with:
-        repository: Faithtosin/honig
-        ref: master
-        token: ${{ secrets.TOKEN }}
+      #Clone another repository, no Token if public
+      # with:
+      #   repository: Faithtosin/honig
+      #   ref: master
+      #   token: ${{ secrets.TOKEN }}
     - name: check files
       run: ls -la
 
@@ -48,10 +49,12 @@ jobs:
           requester,
           event-name,
           event-number,
-          Pull_Request_Number
+          Pull_Request_Number,
+          UiBucket_name
       env:
         custom: ${{ env.custom }}
         requester: ${{ github.actor }}
         event-name: ${{ github.event_name }}
         event-number: ${{ github.event.number  }}
         Pull_Request_Number: ${{ github.event.pull_request.number }}
+        UiBucket_name: ${{ secrets.UiBucket_name }}

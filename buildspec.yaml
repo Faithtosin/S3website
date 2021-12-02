@@ -7,8 +7,6 @@ phases:
   install:
     commands:
       # Update libs
-      - ls -la
-      - ls -la honig
       - apt-get update
       - cd app
   pre_build:
