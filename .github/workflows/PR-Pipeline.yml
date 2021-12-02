@@ -4,12 +4,12 @@ on:
       - master
   workflow_dispatch:
     inputs:
-      logLevel:
-        description: 'Log level'     
+      input1:
+        description: 'first input'     
         required: true
         default: 'warning'
       tags:
-        description: 'Test scenario tags' 
+        description: 'second input' 
 env:
   ENV1: 'Workflow_env'
     
@@ -17,7 +17,7 @@ name: PR-Pipeline
 
 jobs:
   test:
-    name: Test
+    name: Unit Test
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -59,7 +59,7 @@ jobs:
 
   
   deploy-dev:
-    name: Build
+    name: Deploy to Dev
     runs-on: ubuntu-latest
     needs: build
     if: "!failure() && !cancelled()"
@@ -100,94 +100,3 @@ jobs:
         Pull_Request_Number: ${{ github.event.pull_request.number }}
         UiBucket_name: ${{ secrets.DEV_UIBUCKET_NAME }}
         CLOUDFRONT_ID: ${{ secrets.DEV_CLOUDFRONT_ID }}
-  
-  deploy-qa:
-    name: Build
-    runs-on: ubuntu-latest
-    needs: deploy-dev
-    if: "!failure() && !cancelled()"
-    environment: qa
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
-    - name: Run CodeBuild
-      uses: aws-actions/aws-codebuild-run-build@v1
-      with:
-        project-name: codebuild-github-action
-        buildspec-override: .github/workflows/buildspecs/codebuild-deploy.yaml
-        env-vars-for-codebuild: |
-          UiBucket_name,
-          CLOUDFRONT_ID
-      env:
-        UiBucket_name: ${{ secrets.QA_UIBUCKET_NAME }}
-        CLOUDFRONT_ID: ${{ secrets.QA_CLOUDFRONT_ID }}
-
-  integration-test:
-    name: Build
-    runs-on: ubuntu-latest
-    needs: deploy-qa
-    if: "!failure() && !cancelled()"
-    
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-
-    - name: integration test started
-      run: echo "Started integration test"
-
-    - name: integration test completed
-      run: echo "Integration test Completed"
-  
-  e2e-test:
-    name: Build
-    runs-on: ubuntu-latest
-    needs: deploy-qa
-    if: "!failure() && !cancelled()"
-    
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-
-    - name: E2E test started
-      run: echo "Started end to end test"
-
-    - name: E2E test completed
-      run: echo "e2e test Completed"
-  
-  deploy-prod:
-    name: Build
-    runs-on: ubuntu-latest
-    needs: [integration-test, e2e-test]
-    if: "!failure() && !cancelled()"
-    environment: prod
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
-    - name: Run CodeBuild
-      uses: aws-actions/aws-codebuild-run-build@v1
-      with:
-        project-name: codebuild-github-action
-        buildspec-override: .github/workflows/buildspecs/codebuild-deploy.yaml
-        env-vars-for-codebuild: |
-          UiBucket_name,
-          CLOUDFRONT_ID
-      env:
-        UiBucket_name: ${{ secrets.PROD_UIBUCKET_NAME }}
-        CLOUDFRONT_ID: ${{ secrets.PROD_CLOUDFRONT_ID }}
-    
