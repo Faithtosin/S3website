@@ -23,7 +23,9 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: test
-      run: echo  ${{ env.ENV1 }}
+      run: docker run -itd -p 8080:80 nginx
+    - name: check
+      run: curl -Is localhost:8080 | grep "200"
     - name: Unit test started
       run: echo "Started Unit testing"
 
