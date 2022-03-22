@@ -11,7 +11,7 @@ on:
       tags:
         description: 'Test scenario tags' 
 env:
-  ENV1: 'Workflow_env'
+  ENV1: 'Workflow_env-${{ github.sha }}'
     
 name: Main-Pipeline
 
@@ -22,7 +22,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-
+    - name: test
+      run: echo  ${{ env.ENV1 }}
     - name: Unit test started
       run: echo "Started Unit testing"
 
