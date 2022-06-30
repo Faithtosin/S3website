@@ -24,8 +24,10 @@ workflows:
   say-hello-workflow:
     triggers:
       - schedule:
-          branches:
-            only:
-              - master445444444
+          cron: "* * * * *"
+          filters:
+            branches:
+              only:
+                - master445444444
     jobs:
       - say-hello
