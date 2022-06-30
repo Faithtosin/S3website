@@ -23,9 +23,9 @@ jobs:
 workflows:
   say-hello-workflow:
     triggers:
-      schedule:
-        branches:
-          only:
-            - master445444444
+      - schedule:
+          branches:
+            only:
+              - master445444444
     jobs:
       - say-hello
