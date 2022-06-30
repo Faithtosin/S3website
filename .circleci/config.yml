@@ -28,6 +28,6 @@ workflows:
           filters:
             branches:
               only:
-                - master445444444
+                - master
     jobs:
       - say-hello
