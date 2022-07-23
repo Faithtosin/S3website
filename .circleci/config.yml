@@ -17,7 +17,7 @@ jobs:
       - run:
           name: "Say hello"
           command: |
-            "echo Hello, World! > hello.txt"
+            echo "Hello-World!" > hello.txt
             ls -la
             cat hello.txt
   check-hello:
