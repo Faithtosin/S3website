@@ -57,7 +57,8 @@ workflows:
          #     only:
           #      - masterjfdfnhhcjyjvyu
     jobs:
-      - say-hello
+      - say-hello:
+          name: hello_test 
           <<: *test_block
           <<: *test_block_2
       - check-hello
