@@ -5,10 +5,10 @@ version: 2.1
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 test_block: &test_block
-  output: "Say hello from test_block"
+  text: "Say hello from test_block"
 
 test_block_2: &test_block_2
-  output: "Say hello from test_block_2"
+  text: "Say hello from test_block_2"
 
 jobs:
   say_hello:
@@ -17,7 +17,7 @@ jobs:
     docker:
       - image: cimg/base:stable
     parameters:
-      output:
+      text:
         type: string
         default: "hello from the default job value"
     # Add steps to the job
@@ -26,10 +26,7 @@ jobs:
       - checkout
       - run:
           name: "Say_hello"
-          command: |
-            echo << parameter.output >> > hello.txt
-            ls -la
-            cat hello.txt
+          command: echo << parameters.text >> 
   check-hello:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
